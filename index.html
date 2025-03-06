@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberGuard AI - Security Analysis Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+        }
+        .scan-animation {
+            animation: scan 2s infinite;
+        }
+        @keyframes scan {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <nav class="bg-blue-600 text-white p-4">
+        <div class="container mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <i class="bi bi-shield-check text-2xl"></i>
+                <span class="text-xl font-bold">CyberGuard AI</span>
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a href="#" class="hover:text-blue-200">Dashboard</a>
+                <a href="#" class="hover:text-blue-200">History</a>
+                <a href="#" class="hover:text-blue-200">Settings</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+                <h2 class="text-2xl font-bold mb-6">Security Analysis Tool</h2>
+                
+                <div class="grid md:grid-cols-3 gap-4 mb-8">
+                    <button onclick="setActiveTab('link')" id="linkTab" class="tab-button bg-blue-500 text-white p-4 rounded-lg flex items-center justify-center space-x-2 hover:bg-blue-600 transition">
+                        <i class="bi bi-link-45deg text-xl"></i>
+                        <span>URL Scanner</span>
+                    </button>
+                    <button onclick="setActiveTab('email')" id="emailTab" class="tab-button bg-blue-500 text-white p-4 rounded-lg flex items-center justify-center space-x-2 hover:bg-blue-600 transition">
+                        <i class="bi bi-envelope text-xl"></i>
+                        <span>Email Analyzer</span>
+                    </button>
+                    <button onclick="setActiveTab('file')" id="fileTab" class="tab-button bg-blue-500 text-white p-4 rounded-lg flex items-center justify-center space-x-2 hover:bg-blue-600 transition">
+                        <i class="bi bi-file-earmark text-xl"></i>
+                        <span>File Scanner</span>
+                    </button>
+                </div>
+
+                <div id="scannerContent">
+                    <div id="linkScanner" class="scanner-section">
+                        <input type="text" placeholder="Enter URL to scan" class="w-full p-4 border rounded-lg mb-4" id="urlInput">
+                    </div>
+                    <div id="emailScanner" class="scanner-section hidden">
+                        <textarea placeholder="Paste email content here" class="w-full p-4 border rounded-lg mb-4 h-32" id="emailInput"></textarea>
+                    </div>
+                    <div id="fileScanner" class="scanner-section hidden">
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center mb-4">
+                            <i class="bi bi-cloud-upload text-4xl text-gray-400 mb-2"></i>
+                            <p>Drag and drop files here or</p>
+                            <button class="text-blue-500 font-semibold">Browse Files</button>
+                        </div>
+                    </div>
+                    
+                    <button onclick="startScan()" class="w-full bg-green-500 text-white py-4 rounded-lg hover:bg-green-600 transition flex items-center justify-center space-x-2">
+                        <i class="bi bi-search"></i>
+                        <span>Start Scan</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="resultSection" class="hidden bg-white rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold">Scan Results</h3>
+                    <span id="scanDateTime" class="text-gray-500"></span>
+                </div>
+                
+                <div id="scanningAnimation" class="hidden text-center py-8">
+                    <i class="bi bi-shield-check text-6xl text-blue-500 scan-animation"></i>
+                    <p class="mt-4 text-gray-600">AI is analyzing the content...</p>
+                </div>
+
+                <div id="resultContent" class="hidden">
+                    <div class="flex items-center mb-6">
+                        <div id="riskBadge" class="text-white px-4 py-2 rounded-full font-semibold"></div>
+                        <div class="ml-4">
+                            <h4 class="font-semibold">Risk Score</h4>
+                            <div id="riskScore" class="text-2xl font-bold"></div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <h5 class="font-semibold mb-2">Threat Analysis</h5>
+                            <ul id="threatsList" class="list-disc pl-4 space-y-2"></ul>
+                        </div>
+
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <h5 class="font-semibold mb-2">Recommendations</h5>
+                            <ul id="recommendationsList" class="list-disc pl-4 space-y-2"></ul>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex space-x-4">
+                        <button onclick="downloadReport()" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition flex items-center space-x-2">
+                            <i class="bi bi-download"></i>
+                            <span>Download Report</span>
+                        </button>
+                        <button onclick="shareScan()" class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition flex items-center space-x-2">
+                            <i class="bi bi-share"></i>
+                            <span>Share</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let activeTab = 'link';
+
+        function setActiveTab(tab) {
+            activeTab = tab;
+            document.querySelectorAll('.scanner-section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            document.getElementById(`${tab}Scanner`).classList.remove('hidden');
+        }
+
+        function startScan() {
+            const resultSection = document.getElementById('resultSection');
+            const scanningAnimation = document.getElementById('scanningAnimation');
+            const resultContent = document.getElementById('resultContent');
+            
+            resultSection.classList.remove('hidden');
+            scanningAnimation.classList.remove('hidden');
+            resultContent.classList.add('hidden');
+
+            // Simulate AI analysis
+            setTimeout(() => {
+                scanningAnimation.classList.add('hidden');
+                resultContent.classList.remove('hidden');
+                displayResults();
+            }, 3000);
+        }
+
+        function displayResults() {
+            const scanDateTime = document.getElementById('scanDateTime');
+            const riskBadge = document.getElementById('riskBadge');
+            const riskScore = document.getElementById('riskScore');
+            const threatsList = document.getElementById('threatsList');
+            const recommendationsList = document.getElementById('recommendationsList');
+
+            // Simulate different results based on input
+            const results = generateSimulatedResults();
+
+            scanDateTime.textContent = new Date().toLocaleString();
+            riskBadge.textContent = results.riskLevel;
+            riskBadge.className = `text-white px-4 py-2 rounded-full font-semibold ${results.badgeColor}`;
+            riskScore.textContent = results.score + '/100';
+
+            threatsList.innerHTML = results.threats.map(threat => 
+                `<li>${threat}</li>`
+            ).join('');
+
+            recommendationsList.innerHTML = results.recommendations.map(rec => 
+                `<li>${rec}</li>`
+            ).join('');
+        }
+
+        function generateSimulatedResults() {
+            const inputValue = activeTab === 'link' 
+                ? document.getElementById('urlInput').value
+                : activeTab === 'email' 
+                    ? document.getElementById('emailInput').value 
+                    : 'file.txt';
+
+            // Simulate different risk levels based on keywords
+            if (inputValue.includes('scam') || inputValue.includes('phishing')) {
+                return {
+                    riskLevel: 'High Risk',
+                    score: 85,
+                    badgeColor: 'bg-red-500',
+                    threats: [
+                        'Phishing attempt detected',
+                        'Suspicious sender reputation',
+                        'Known malicious patterns identified'
+                    ],
+                    recommendations: [
+                        'Do not click any links or download attachments',
+                        'Report to IT security team',
+                        'Block sender immediately'
+                    ]
+                };
+            } else {
+                return {
+                    riskLevel: 'Low Risk',
+                    score: 15,
+                    badgeColor: 'bg-green-500',
+                    threats: [
+                        'No immediate threats detected',
+                        'Standard security protocols in place'
+                    ],
+                    recommendations: [
+                        'Safe to proceed',
+                        'Continue monitoring for changes',
+                        'Keep security software updated'
+                    ]
+                };
+            }
+        }
+
+        function downloadReport() {
+            alert('Report download started...');
+        }
+
+        function shareScan() {
+            alert('Sharing options opened...');
+        }
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
